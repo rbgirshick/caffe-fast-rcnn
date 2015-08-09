@@ -7,6 +7,7 @@
 #include <boost/python.hpp>
 #include <boost/python/raw_function.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/python/enum.hpp>
 #include <numpy/arrayobject.h>
 
 // these need to be included after boost on OS X
@@ -199,8 +200,14 @@ BOOST_PYTHON_MODULE(_caffe) {
   bp::def("set_mode_cpu", &set_mode_cpu);
   bp::def("set_mode_gpu", &set_mode_gpu);
   bp::def("set_device", &Caffe::SetDevice);
+  bp::def("set_random_seed", &Caffe::set_random_seed);
 
   bp::def("layer_type_list", &LayerRegistry<Dtype>::LayerTypeList);
+
+  bp::enum_<Phase>("Phase")
+    .value("TRAIN", caffe::TRAIN)
+    .value("TEST", caffe::TEST)
+    .export_values();
 
   bp::class_<Net<Dtype>, shared_ptr<Net<Dtype> >, boost::noncopyable >("Net",
     bp::no_init)
@@ -257,6 +264,7 @@ BOOST_PYTHON_MODULE(_caffe) {
           bp::return_internal_reference<>()))
     .def("setup", &Layer<Dtype>::LayerSetUp)
     .def("reshape", &Layer<Dtype>::Reshape)
+    .add_property("phase", bp::make_function(&Layer<Dtype>::phase))
     .add_property("type", bp::make_function(&Layer<Dtype>::type));
   bp::register_ptr_to_python<shared_ptr<Layer<Dtype> > >();
 
