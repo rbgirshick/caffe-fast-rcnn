@@ -24,7 +24,7 @@ class PythonLayer : public Layer<Dtype> {
         && !ShareInParallel()) {
       LOG(FATAL) << "PythonLayer is not implemented in Multi-GPU training";
     }
-    self_.attr("param_str") = bp::str(
+    self_.attr("param_str_") = bp::str(
         this->layer_param_.python_param().param_str());
     self_.attr("setup")(bottom, top);
   }
