@@ -3,6 +3,7 @@ Wrap the internal caffe C++ module (_caffe.so) with a clean, Pythonic
 interface.
 """
 
+import six
 from collections import OrderedDict
 try:
     from itertools import izip_longest
@@ -87,7 +88,7 @@ def _Net_forward(self, blobs=None, start=None, end=None, **kwargs):
             raise Exception('Input blob arguments do not match net inputs.')
         # Set input according to defined shapes and make arrays single and
         # C-contiguous as Caffe expects.
-        for in_, blob in kwargs.iteritems():
+        for in_, blob in six.iteritems(kwargs):
             if blob.shape[0] != self.blobs[in_].num:
                 raise Exception('Input is not batch sized')
             self.blobs[in_].data[...] = blob
@@ -135,7 +136,7 @@ def _Net_backward(self, diffs=None, start=None, end=None, **kwargs):
             raise Exception('Top diff arguments do not match net outputs.')
         # Set top diffs according to defined shapes and make arrays single and
         # C-contiguous as Caffe expects.
-        for top, diff in kwargs.iteritems():
+        for top, diff in six.iteritems(kwargs):
             if diff.ndim != 4:
                 raise Exception('{} diff is not 4-d'.format(top))
             if diff.shape[0] != self.blobs[top].num:
@@ -166,7 +167,7 @@ def _Net_forward_all(self, blobs=None, **kwargs):
     all_outs = {out: [] for out in set(self.outputs + (blobs or []))}
     for batch in self._batch(kwargs):
         outs = self.forward(blobs=blobs, **batch)
-        for out, out_blob in outs.iteritems():
+        for out, out_blob in six.iteritems(outs):
             all_outs[out].extend(out_blob.copy())
     # Package in ndarray.
     for out in all_outs:
@@ -207,9 +208,9 @@ def _Net_forward_backward_all(self, blobs=None, diffs=None, **kwargs):
     for fb, bb in izip_longest(forward_batches, backward_batches, fillvalue={}):
         batch_blobs = self.forward(blobs=blobs, **fb)
         batch_diffs = self.backward(diffs=diffs, **bb)
-        for out, out_blobs in batch_blobs.iteritems():
+        for out, out_blobs in six.iteritems(batch_blobs):
             all_outs[out].extend(out_blobs)
-        for diff, out_diffs in batch_diffs.iteritems():
+        for diff, out_diffs in six.iteritems(batch_diffs):
             all_diffs[diff].extend(out_diffs)
     # Package in ndarray.
     for out, diff in zip(all_outs, all_diffs):
