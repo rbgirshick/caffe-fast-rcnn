@@ -56,6 +56,21 @@ function(caffe_generate_export_configs)
     list(APPEND Caffe_DEFINITIONS -DCPU_ONLY)
   endif()
 
+  if(USE_OPENCV)
+    list(APPEND Caffe_DEFINITIONS -DUSE_OPENCV)
+  endif()
+
+  if(USE_LMDB)
+    list(APPEND Caffe_DEFINITIONS -DUSE_LMDB)
+    if (ALLOW_LMDB_NOLOCK)
+        list(APPEND Caffe_DEFINITIONS -DALLOW_LMDB_NOLOCK)
+    endif()
+  endif()
+
+  if(USE_LEVELDB)
+    list(APPEND Caffe_DEFINITIONS -DUSE_LEVELDB)
+  endif()
+
   if(NOT HAVE_CUDNN)
     set(HAVE_CUDNN FALSE)
   else()
@@ -94,7 +109,7 @@ function(caffe_generate_export_configs)
 
   # ---[ Configure and install version file ]---
 
-  # TODO: Lines below are commented because Caffe does't declare its version in headers.
+  # TODO: Lines below are commented because Caffe doesn't declare its version in headers.
   # When the declarations are added, modify `caffe_extract_caffe_version()` macro and uncomment
 
   # configure_file(cmake/Templates/CaffeConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/CaffeConfigVersion.cmake" @ONLY)
