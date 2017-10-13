@@ -43,8 +43,7 @@ def anon_lenet(batch_size):
 
 def silent_net():
     n = caffe.NetSpec()
-    n.data, n.data2 = L.DummyData(shape=[dict(dim=[3]), dict(dim=[4, 2])],
-                                  ntop=2)
+    n.data, n.data2 = L.DummyData(shape=dict(dim=3), ntop=2)
     n.silence_data = L.Silence(n.data, ntop=0)
     n.silence_data2 = L.Silence(n.data2, ntop=0)
     return n.to_proto()
@@ -80,3 +79,11 @@ class TestNetSpec(unittest.TestCase):
         net_proto = silent_net()
         net = self.load_net(net_proto)
         self.assertEqual(len(net.forward()), 0)
+
+    def test_type_error(self):
+        """Test that a TypeError is raised when a Function input isn't a Top."""
+        data = L.DummyData(ntop=2)  # data is a 2-tuple of Tops
+        r = r"^Silence input 0 is not a Top \(type is <(type|class) 'tuple'>\)$"
+        with self.assertRaisesRegexp(TypeError, r):
+            L.Silence(data, ntop=0)  # should raise: data is a tuple, not a Top
+        L.Silence(*data, ntop=0)  # shouldn't raise: each elt of data is a Top

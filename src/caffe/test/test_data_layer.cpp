@@ -1,3 +1,4 @@
+#ifdef USE_OPENCV
 #include <string>
 #include <vector>
 
@@ -6,8 +7,8 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
-#include "caffe/data_layers.hpp"
 #include "caffe/filler.hpp"
+#include "caffe/layers/data_layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/db.hpp"
 #include "caffe/util/io.hpp"
@@ -102,6 +103,32 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
         }
       }
     }
+  }
+
+  void TestSkip() {
+    LayerParameter param;
+    param.set_phase(TRAIN);
+    DataParameter* data_param = param.mutable_data_param();
+    int batch_size = 5;
+    data_param->set_batch_size(batch_size);
+    data_param->set_source(filename_->c_str());
+    data_param->set_backend(backend_);
+    Caffe::set_solver_count(8);
+    for (int dev = 0; dev < Caffe::solver_count(); ++dev) {
+      Caffe::set_solver_rank(dev);
+      DataLayer<Dtype> layer(param);
+      layer.SetUp(blob_bottom_vec_, blob_top_vec_);
+      int label = dev;
+      for (int iter = 0; iter < 10; ++iter) {
+        layer.Forward(blob_bottom_vec_, blob_top_vec_);
+        for (int i = 0; i < batch_size; ++i) {
+          EXPECT_EQ(label % batch_size, blob_top_label_->cpu_data()[i]);
+          label += Caffe::solver_count();
+        }
+      }
+    }
+    Caffe::set_solver_count(1);
+    Caffe::set_solver_rank(0);
   }
 
   void TestReshape(DataParameter_DB backend) {
@@ -348,10 +375,16 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
 
 TYPED_TEST_CASE(DataLayerTest, TestDtypesAndDevices);
 
+#ifdef USE_LEVELDB
 TYPED_TEST(DataLayerTest, TestReadLevelDB) {
   const bool unique_pixels = false;  // all pixels the same; images different
   this->Fill(unique_pixels, DataParameter_DB_LEVELDB);
   this->TestRead();
+}
+
+TYPED_TEST(DataLayerTest, TestSkipLevelDB) {
+  this->Fill(false, DataParameter_DB_LEVELDB);
+  this->TestSkip();
 }
 
 TYPED_TEST(DataLayerTest, TestReshapeLevelDB) {
@@ -385,11 +418,18 @@ TYPED_TEST(DataLayerTest, TestReadCropTestLevelDB) {
   this->Fill(unique_pixels, DataParameter_DB_LEVELDB);
   this->TestReadCrop(TEST);
 }
+#endif  // USE_LEVELDB
 
+#ifdef USE_LMDB
 TYPED_TEST(DataLayerTest, TestReadLMDB) {
   const bool unique_pixels = false;  // all pixels the same; images different
   this->Fill(unique_pixels, DataParameter_DB_LMDB);
   this->TestRead();
+}
+
+TYPED_TEST(DataLayerTest, TestSkipLMDB) {
+  this->Fill(false, DataParameter_DB_LMDB);
+  this->TestSkip();
 }
 
 TYPED_TEST(DataLayerTest, TestReshapeLMDB) {
@@ -424,4 +464,6 @@ TYPED_TEST(DataLayerTest, TestReadCropTestLMDB) {
   this->TestReadCrop(TEST);
 }
 
+#endif  // USE_LMDB
 }  // namespace caffe
+#endif  // USE_OPENCV

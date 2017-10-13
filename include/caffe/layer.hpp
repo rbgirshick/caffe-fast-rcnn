@@ -9,7 +9,13 @@
 #include "caffe/common.hpp"
 #include "caffe/layer_factory.hpp"
 #include "caffe/proto/caffe.pb.h"
-#include "caffe/util/device_alternate.hpp"
+#include "caffe/util/math_functions.hpp"
+
+/**
+ Forward declare boost::thread instead of including boost/thread.hpp
+ to avoid a boost/NVCC issues (#1009, #1010) on OSX.
+ */
+namespace boost { class mutex; }
 
 namespace caffe {
 
@@ -285,6 +291,7 @@ class Layer {
     param_propagate_down_[param_id] = value;
   }
 
+  inline Phase phase() { return phase_; }
 
  protected:
   /** The protobuf that stores the layer parameters */
@@ -396,6 +403,7 @@ class Layer {
     }
   }
 
+ private:
   DISABLE_COPY_AND_ASSIGN(Layer);
 };  // class Layer
 

@@ -79,6 +79,7 @@ class Classifier(caffe.Net):
                 -self.crop_dims / 2.0,
                 self.crop_dims / 2.0
             ])
+            crop = crop.astype(int)
             input_ = input_[:, crop[0]:crop[2], crop[1]:crop[3], :]
 
         # Classify
@@ -91,7 +92,7 @@ class Classifier(caffe.Net):
 
         # For oversampling, average predictions across crops.
         if oversample:
-            predictions = predictions.reshape((len(predictions) / 10, 10, -1))
+            predictions = predictions.reshape((len(predictions) // 10, 10, -1))
             predictions = predictions.mean(1)
 
         return predictions
