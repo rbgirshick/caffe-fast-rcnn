@@ -1,16 +1,14 @@
-#include <algorithm>
 #include <cmath>
 #include <vector>
 
-#include "caffe/layer.hpp"
-#include "caffe/vision_layers.hpp"
+#include "caffe/layers/sigmoid_layer.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
 __global__ void SigmoidForward(const int n, const Dtype* in, Dtype* out) {
   CUDA_KERNEL_LOOP(index, n) {
-    out[index] = 1. / (1. + exp(-in[index]));
+    out[index] = 0.5 * tanh(0.5 * in[index]) + 0.5;
   }
 }
 

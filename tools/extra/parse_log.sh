@@ -14,7 +14,12 @@ echo "Usage parse_log.sh /path/to/your.log"
 exit
 fi
 LOG=`basename $1`
-grep -B 1 'Test ' $1 > aux.txt
+sed -n '/Iteration .* Testing net/,/Iteration *. loss/p' $1 > aux.txt
+sed -i '/Waiting for data/d' aux.txt
+sed -i '/prefetch queue empty/d' aux.txt
+sed -i '/Iteration .* loss/d' aux.txt
+sed -i '/Iteration .* lr/d' aux.txt
+sed -i '/Train net/d' aux.txt
 grep 'Iteration ' aux.txt | sed  's/.*Iteration \([[:digit:]]*\).*/\1/g' > aux0.txt
 grep 'Test net output #0' aux.txt | awk '{print $11}' > aux1.txt
 grep 'Test net output #1' aux.txt | awk '{print $11}' > aux2.txt
@@ -34,7 +39,7 @@ rm aux.txt aux0.txt aux1.txt aux2.txt aux3.txt aux4.txt
 grep '] Solving ' $1 > aux.txt
 grep ', loss = ' $1 >> aux.txt
 grep 'Iteration ' aux.txt | sed  's/.*Iteration \([[:digit:]]*\).*/\1/g' > aux0.txt
-grep ', loss = ' $1 | awk '{print $9}' > aux1.txt
+grep ', loss = ' $1 | awk -F = '{print $2}' > aux1.txt
 grep ', lr = ' $1 | awk '{print $9}' > aux2.txt
 
 # Extracting elapsed seconds

@@ -50,11 +50,18 @@ For a full example of fine-tuning, see examples/finetuning_on_flickr_style, but 
     # query the first device
     caffe device_query -gpu 0
 
+**Parallelism**: the `-gpu` flag to the `caffe` tool can take a comma separated list of IDs to run on multiple GPUs. A solver and net will be instantiated for each GPU so the batch size is effectively multiplied by the number of GPUs. To reproduce single GPU training, reduce the batch size in the network definition accordingly.
+
+    # train on GPUs 0 & 1 (doubling the batch size)
+    caffe train -solver examples/mnist/lenet_solver.prototxt -gpu 0,1
+    # train on all GPUs (multiplying batch size by number of devices)
+    caffe train -solver examples/mnist/lenet_solver.prototxt -gpu all
+
 ## Python
 
 The Python interface -- pycaffe -- is the `caffe` module and its scripts in caffe/python. `import caffe` to load models, do forward and backward, handle IO, visualize networks, and even instrument model solving. All model data, derivatives, and parameters are exposed for reading and writing.
 
-- `caffe.Net` is the central interface for loading, configuring, and running models. `caffe.Classsifier` and `caffe.Detector` provide convenience interfaces for common tasks.
+- `caffe.Net` is the central interface for loading, configuring, and running models. `caffe.Classifier` and `caffe.Detector` provide convenience interfaces for common tasks.
 - `caffe.SGDSolver` exposes the solving interface.
 - `caffe.io` handles input / output with preprocessing and protocol buffers.
 - `caffe.draw` visualizes network architectures.
@@ -84,7 +91,7 @@ In MatCaffe, you can
 * Run for a certain number of iterations and give back control to Matlab
 * Intermingle arbitrary Matlab code with gradient steps
 
-An ILSVRC image classification demo is in caffe/matlab/demo/classification_demo.m (you need to download BVLC CaffeNet from [Model Zoo](http://caffe.berkeleyvision.org/model_zoo.html) to run it).
+An ILSVRC image classification demo is in caffe/matlab/demo/classification_demo.m (you need to download BAIR CaffeNet from [Model Zoo](http://caffe.berkeleyvision.org/model_zoo.html) to run it).
 
 ### Build MatCaffe
 
@@ -107,7 +114,7 @@ You can save your Matlab search PATH by running `savepath` so that you don't hav
 
 MatCaffe is very similar to PyCaffe in usage.
 
-Examples below shows detailed usages and assumes you have downloaded BVLC CaffeNet from [Model Zoo](http://caffe.berkeleyvision.org/model_zoo.html) and started `matlab` from caffe root folder.
+Examples below shows detailed usages and assumes you have downloaded BAIR CaffeNet from [Model Zoo](http://caffe.berkeleyvision.org/model_zoo.html) and started `matlab` from caffe root folder.
 
     model = './models/bvlc_reference_caffenet/deploy.prototxt';
     weights = './models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel';

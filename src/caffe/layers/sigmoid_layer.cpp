@@ -1,15 +1,13 @@
-#include <algorithm>
 #include <cmath>
 #include <vector>
 
-#include "caffe/layer.hpp"
-#include "caffe/vision_layers.hpp"
+#include "caffe/layers/sigmoid_layer.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
 inline Dtype sigmoid(Dtype x) {
-  return 1. / (1. + exp(-x));
+  return 0.5 * tanh(0.5 * x) + 0.5;
 }
 
 template <typename Dtype>
